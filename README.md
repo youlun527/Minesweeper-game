@@ -7,11 +7,12 @@
 
 #define MAX_SIZE 10
 
-char board[MAX_SIZE][MAX_SIZE];       // Player's view
-char mine_map[MAX_SIZE][MAX_SIZE];    // Real mine locations
+char board[MAX_SIZE][MAX_SIZE];       // Player view
+char mine_map[MAX_SIZE][MAX_SIZE];    // Actual mine locations
 int rows, cols, mines;
 int revealed_cells = 0;
 int flag_count = 0;
+time_t start_time, end_time;
 
 void init_board() {
     for (int i = 0; i < rows; i++)
@@ -61,7 +62,7 @@ void reveal_cell(int r, int c) {
 }
 
 void print_board() {
-    printf("\n  Remaining Mines: %d\n\n", mines - flag_count);
+    printf("\nRemaining Mines: %d\n\n", mines - flag_count);
 
     // Print column header
     printf("    ");
@@ -71,35 +72,30 @@ void print_board() {
 
     // Print top border
     printf("   +");
-    for (int j = 0; j < cols; j++) {
+    for (int j = 0; j < cols; j++)
         printf("---");
-        if (j == cols - 1) printf("+");
-    }
-    printf("\n");
+    printf("+\n");
 
-    // Print rows
     for (int i = 0; i < rows; i++) {
-        printf("%2d |", i);
+        printf(" %2d|", i);
         for (int j = 0; j < cols; j++) {
             char display;
             switch (board[i][j]) {
-                case '*': display = '#'; break;   // unrevealed
+                case '*': display = '#'; break;   // unrevealed cell
                 case 'F': display = 'F'; break;   // flag
-                case ' ': display = ' '; break;   // empty
+                case ' ': display = ' '; break;   // revealed empty
                 default:  display = board[i][j]; break; // number or mine
             }
             printf(" %c ", display);
         }
         printf("|\n");
-
-        // Print row separator
-        printf("   +");
-        for (int j = 0; j < cols; j++) {
-            printf("---");
-            if (j == cols - 1) printf("+");
-        }
-        printf("\n");
     }
+
+    // Print bottom border
+    printf("   +");
+    for (int j = 0; j < cols; j++)
+        printf("---");
+    printf("+\n");
 }
 
 int check_win() {
@@ -142,6 +138,7 @@ int main() {
 
     init_board();
     place_mines();
+    time(&start_time); // Start timing
 
     while (1) {
         print_board();
@@ -163,16 +160,20 @@ int main() {
             if (mine_map[r][c] == 'M') {
                 board[r][c] = 'M';
                 print_board();
+                time(&end_time);
                 printf("You stepped on a mine! Game Over!\n");
+                printf("Time spent: %.0f seconds\n", difftime(end_time, start_time));
                 break;
             }
             reveal_cell(r, c);
             if (check_win()) {
                 print_board();
+                time(&end_time);
                 printf("Congratulations! You've cleared the minefield!\n");
+                printf("Time spent: %.0f seconds\n", difftime(end_time, start_time));
                 break;
             }
-        } else { // Assume it's a coordinate input
+        } else {
             r = atoi(cmd);
             scanf("%d", &c);
             if (board[r][c] == 'F') {
@@ -182,13 +183,17 @@ int main() {
             if (mine_map[r][c] == 'M') {
                 board[r][c] = 'M';
                 print_board();
+                time(&end_time);
                 printf("You stepped on a mine! Game Over!\n");
+                printf("Time spent: %.0f seconds\n", difftime(end_time, start_time));
                 break;
             }
             reveal_cell(r, c);
             if (check_win()) {
                 print_board();
+                time(&end_time);
                 printf("Congratulations! You've cleared the minefield!\n");
+                printf("Time spent: %.0f seconds\n", difftime(end_time, start_time));
                 break;
             }
         }
